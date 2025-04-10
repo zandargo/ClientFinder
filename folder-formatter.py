@@ -10,21 +10,41 @@ def is_date_format(folder_name, pattern):
     """
     return bool(re.match(pattern, folder_name))
 
-def convert_date_format(folder_name, from_pattern, to_format):
+def convert_date_format(folder_name, from_pattern, to_format, with_suffix=False):
     """
-    Convert folder name from dd-mm-yyyy to yyyy-mm-dd format.
+    Convert folder name from dd-mm-yyyy format (with potential suffixes) to yyyy-mm-dd format.
+    
+    Examples of conversions:
+    - '16-03-2023-01' to '2023-03-16 001'
+    - '21-10-2024_3' to '2024-10-21 003'
+    - '29-08-2023 2' to '2023-08-29 002'
     """
     try:
         # Parse the date using the provided pattern
         match = re.match(from_pattern, folder_name)
         if match:
-            day, month, year = match.groups()
+            groups = match.groups()
             
-            # Validate the date
-            date_obj = datetime(int(year), int(month), int(day))
-            
-            # Format to the target format
-            return date_obj.strftime(to_format)
+            if with_suffix:
+                day, month, year, suffix = groups
+                # Convert suffix to 3-digit format
+                suffix = suffix.strip()
+                suffix_int = int(suffix)
+                formatted_suffix = f" {suffix_int:03d}"
+                
+                # Validate the date
+                date_obj = datetime(int(year), int(month), int(day))
+                
+                # Format to the target format with suffix
+                return date_obj.strftime(to_format) + formatted_suffix
+            else:
+                day, month, year = groups
+                
+                # Validate the date
+                date_obj = datetime(int(year), int(month), int(day))
+                
+                # Format to the target format
+                return date_obj.strftime(to_format)
         return None
     except ValueError:
         # If the date is invalid (e.g., 31-02-2023)
@@ -32,10 +52,23 @@ def convert_date_format(folder_name, from_pattern, to_format):
 
 def rename_date_folders(start_dir):
     """
-    Recursively search for folders with dd-mm-yyyy pattern and rename to yyyy-mm-dd.
+    Recursively search for folders with dd-mm-yyyy pattern (and variations with suffixes) 
+    and rename them to the appropriate format.
     """
-    # Regular expression pattern for dd-mm-yyyy
-    from_pattern = r'^(\d{2})-(\d{2})-(\d{4})$'
+    # Regular expression patterns
+    # Standard pattern: dd-mm-yyyy
+    standard_pattern = r'^(\d{2})-(\d{2})-(\d{4})$'
+    
+    # Patterns with suffixes:
+    # dd-mm-yyyy-nn (hyphen separator)
+    hyphen_suffix_pattern = r'^(\d{2})-(\d{2})-(\d{4})-(\d+)$'
+    
+    # dd-mm-yyyy_nn (underscore separator)
+    underscore_suffix_pattern = r'^(\d{2})-(\d{2})-(\d{4})_(\d+)$'
+    
+    # dd-mm-yyyy nn (space separator)
+    space_suffix_pattern = r'^(\d{2})-(\d{2})-(\d{4}) (\d+)$'
+    
     to_format = '%Y-%m-%d'  # yyyy-mm-dd
     
     renamed_count = 0
@@ -43,24 +76,41 @@ def rename_date_folders(start_dir):
     
     for root, dirs, _ in os.walk(start_dir):
         for dir_name in dirs:
-            if is_date_format(dir_name, from_pattern):
-                new_name = convert_date_format(dir_name, from_pattern, to_format)
+            # Check for standard date format
+            if is_date_format(dir_name, standard_pattern):
+                new_name = convert_date_format(dir_name, standard_pattern, to_format, with_suffix=False)
+            
+            # Check for date format with hyphen suffix
+            elif is_date_format(dir_name, hyphen_suffix_pattern):
+                new_name = convert_date_format(dir_name, hyphen_suffix_pattern, to_format, with_suffix=True)
                 
-                if new_name:
-                    old_path = os.path.join(root, dir_name)
-                    new_path = os.path.join(root, new_name)
-                    
-                    try:
-                        # Check if destination already exists
-                        if os.path.exists(new_path):
-                            errors.append(f"Cannot rename {old_path} to {new_path}: Destination already exists")
-                            continue
-                            
-                        os.rename(old_path, new_path)
-                        renamed_count += 1
-                        print(f"Renamed: {dir_name} -> {new_name}")
-                    except Exception as e:
-                        errors.append(f"Error renaming {dir_name}: {str(e)}")
+            # Check for date format with underscore suffix
+            elif is_date_format(dir_name, underscore_suffix_pattern):
+                new_name = convert_date_format(dir_name, underscore_suffix_pattern, to_format, with_suffix=True)
+                
+            # Check for date format with space suffix
+            elif is_date_format(dir_name, space_suffix_pattern):
+                new_name = convert_date_format(dir_name, space_suffix_pattern, to_format, with_suffix=True)
+                
+            else:
+                # Not a matching pattern
+                continue
+                
+            if new_name:
+                old_path = os.path.join(root, dir_name)
+                new_path = os.path.join(root, new_name)
+                
+                try:
+                    # Check if destination already exists
+                    if os.path.exists(new_path):
+                        errors.append(f"Cannot rename {old_path} to {new_path}: Destination already exists")
+                        continue
+                        
+                    os.rename(old_path, new_path)
+                    renamed_count += 1
+                    print(f"Renamed: {dir_name} -> {new_name}")
+                except Exception as e:
+                    errors.append(f"Error renaming {dir_name}: {str(e)}")
     
     return renamed_count, errors
 

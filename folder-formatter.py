@@ -59,6 +59,9 @@ def rename_date_folders(start_dir):
     # Standard pattern: dd-mm-yyyy
     standard_pattern = r'^(\d{2})-(\d{2})-(\d{4})$'
     
+    # Standard pattern with dots: dd.mm.yyyy
+    dot_pattern = r'^(\d{2})\.(\d{2})\.(\d{4})$'
+    
     # Patterns with suffixes:
     # dd-mm-yyyy-nn (hyphen separator)
     hyphen_suffix_pattern = r'^(\d{2})-(\d{2})-(\d{4})-(\d+)$'
@@ -68,6 +71,16 @@ def rename_date_folders(start_dir):
     
     # dd-mm-yyyy nn (space separator)
     space_suffix_pattern = r'^(\d{2})-(\d{2})-(\d{4}) (\d+)$'
+    
+    # Patterns with dots and suffixes:
+    # dd.mm.yyyy-nn (dot with hyphen suffix)
+    dot_hyphen_suffix_pattern = r'^(\d{2})\.(\d{2})\.(\d{4})-(\d+)$'
+    
+    # dd.mm.yyyy_nn (dot with underscore suffix)
+    dot_underscore_suffix_pattern = r'^(\d{2})\.(\d{2})\.(\d{4})_(\d+)$'
+    
+    # dd.mm.yyyy nn (dot with space suffix)
+    dot_space_suffix_pattern = r'^(\d{2})\.(\d{2})\.(\d{4}) (\d+)$'
     
     to_format = '%Y-%m-%d'  # yyyy-mm-dd
     
@@ -80,6 +93,10 @@ def rename_date_folders(start_dir):
             if is_date_format(dir_name, standard_pattern):
                 new_name = convert_date_format(dir_name, standard_pattern, to_format, with_suffix=False)
             
+            # Check for standard date format with dots
+            elif is_date_format(dir_name, dot_pattern):
+                new_name = convert_date_format(dir_name, dot_pattern, to_format, with_suffix=False)
+            
             # Check for date format with hyphen suffix
             elif is_date_format(dir_name, hyphen_suffix_pattern):
                 new_name = convert_date_format(dir_name, hyphen_suffix_pattern, to_format, with_suffix=True)
@@ -91,6 +108,18 @@ def rename_date_folders(start_dir):
             # Check for date format with space suffix
             elif is_date_format(dir_name, space_suffix_pattern):
                 new_name = convert_date_format(dir_name, space_suffix_pattern, to_format, with_suffix=True)
+            
+            # Check for date format with dots and hyphen suffix
+            elif is_date_format(dir_name, dot_hyphen_suffix_pattern):
+                new_name = convert_date_format(dir_name, dot_hyphen_suffix_pattern, to_format, with_suffix=True)
+                
+            # Check for date format with dots and underscore suffix
+            elif is_date_format(dir_name, dot_underscore_suffix_pattern):
+                new_name = convert_date_format(dir_name, dot_underscore_suffix_pattern, to_format, with_suffix=True)
+                
+            # Check for date format with dots and space suffix
+            elif is_date_format(dir_name, dot_space_suffix_pattern):
+                new_name = convert_date_format(dir_name, dot_space_suffix_pattern, to_format, with_suffix=True)
                 
             else:
                 # Not a matching pattern
@@ -129,7 +158,7 @@ def select_folder():
 
 def main():
     print("Folder Date Format Converter")
-    print("This script will convert folders named dd-mm-yyyy to yyyy-mm-dd format")
+    print("This script will convert folders named dd-mm-yyyy and dd.mm.yyyy to yyyy-mm-dd format")
     print("-" * 60)
     
     # Ask user to select a folder
@@ -140,7 +169,7 @@ def main():
         return
     
     print(f"Starting search in: {start_dir}")
-    print("Searching for folders with the pattern dd-mm-yyyy...")
+    print("Searching for folders with patterns dd-mm-yyyy and dd.mm.yyyy...")
     
     renamed_count, errors = rename_date_folders(start_dir)
     

@@ -100,13 +100,13 @@ def create_batch_folders():
         
         try:
             os.makedirs(folder_path, exist_ok=True)
-            print(f"Created folder: {folder_path}")
+            # print(f"Created folder: {folder_path}")
             
             # Only create Rev-00 subfolder if user selected yes
             if create_rev_subfolders:
                 rev_folder_path = os.path.join(folder_path, "Rev-00")
                 os.makedirs(rev_folder_path, exist_ok=True)
-                print(f"Created subfolder: {rev_folder_path}")
+                # print(f"Created subfolder: {rev_folder_path}")
             
             created_folder_paths.append(folder_path)
             folders_created += 1

